@@ -14,6 +14,7 @@ let message = '';
 
 var socket = io.connect('http://localhost:3000');
 // var socket = io.connect('http://14a48ab8.ngrok.io');
+// example URL, make sure to point to the hosted URL
 
 function focus() {
     document.getElementById('usernameInput').focus();
