@@ -7,4 +7,4 @@ of the Socket.IO website.
 Use 'node index' to run on localhost:3000
 
 Use 'node server' to run online.
-Make sure to look at /scripts/chat.js and make sure io.connect is pointing to your URL.
+Make sure to look at /scripts/chat.js and point io.connect to your URL.
