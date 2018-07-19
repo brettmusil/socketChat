@@ -8,7 +8,7 @@ var port = process.env.PORT || 3000;
 
 let staticFiles = __dirname + '/scripts';
 
-let currentUsers = [];
+let onlineUsers = [];
 
 app.use('/', express.static(staticFiles));
 
@@ -16,27 +16,28 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-function getOnlineUsers() {
-    let onlineUsers = [];
-    currentUsers.forEach((user) => {
-        onlineUsers.push(user[0]);
+function getOnlineUsernames() {
+    let onlineUsernames = [];
+    onlineUsers.forEach((user) => {
+        onlineUsernames.push(user[0]);
     });
-    return onlineUsers;
+    return onlineUsernames;
 }
 
 io.on('connection', (socket) => {
 let joinedChat = false;
 
 socket.on('hello?', (userID) => {
-    io.to(userID).emit('current users', getOnlineUsers());
+    io.to(userID).emit('who is here', getOnlineUsernames());
 });
 
 socket.on('join chat', (username, userID) => {
     socket.username = username;
     joinedChat = true;
+    onlineUsers.push([username, userID]);
     socket.broadcast.emit('system message', username + ' has joined the chat.');
-    currentUsers.push([username, userID]);
-    console.log(currentUsers);
+    socket.emit('update users', onlineUsers)
+    console.log(onlineUsers);
 });
 
 socket.on('user sent message', (username, msg) => {
@@ -45,13 +46,14 @@ socket.on('user sent message', (username, msg) => {
 
 socket.on('disconnect', () => {
         if (joinedChat) {
-            for (i = 0; i < currentUsers.length; i++) {
-                if (currentUsers[i][1] == socket.id) {
-                    currentUsers.splice(i, 1);
+            for (i = 0; i < onlineUsers.length; i++) {
+                if (onlineUsers[i][1] == socket.id) {
+                    onlineUsers.splice(i, 1);
                 }
             }
+            socket.broadcast.emit('update users', onlineUsers);
             socket.broadcast.emit('system message', socket.username + ' has left.'); 
-            console.log('Currently online :' + currentUsers);
+            console.log('Currently online :' + onlineUsers);
         }
 });
 

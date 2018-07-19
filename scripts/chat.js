@@ -77,7 +77,7 @@ socket.on('connect', () => {
     socket.emit('hello?', userID);
 });
 
-socket.on('current users', (onlineUsers) => {
+socket.on('who is here', (onlineUsers) => {
     users = onlineUsers;
     if (onlineUsers[0]) {
         addSystemMessage('Online users :')
@@ -91,7 +91,8 @@ socket.on('current users', (onlineUsers) => {
 
 socket.on('update users', (onlineUsers) => {
     users = onlineUsers;
-    updateOnlineUsers(onlineUsers)
+    // displayUsernames(users);
+    // add logic
 })
 
 socket.on('incoming message', (username, msg) => {
