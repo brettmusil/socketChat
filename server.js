@@ -8,8 +8,6 @@ let staticFiles = __dirname + '/scripts';
 
 let currentUsers = [];
 
-let lastUserToLeave = '';
-
 app.use('/', express.static(staticFiles));
 
 app.get('/', function (req, res) {
@@ -18,49 +16,42 @@ app.get('/', function (req, res) {
 
 function getOnlineUsers() {
     let onlineUsers = [];
-    for (i = 0; i < currentUsers.length; i++) {
-        onlineUsers.push(currentUsers[i][0]);
-    }
+    currentUsers.forEach((user) => {
+        onlineUsers.push(user[0]);
+    });
     return onlineUsers;
 }
 
 io.on('connection', function (socket) {
+    let joinedChat = false;
+
     socket.on('hello?', (userID) => {
         io.to(userID).emit('current users', getOnlineUsers());
     });
 
     socket.on('join chat', (username, userID) => {
-        socket.broadcast.emit('incoming message', username + ' has joined the chat.');
-        let userdata = [];
-        userdata.push(username, userID);
-        currentUsers.push(userdata);
+        socket.username = username;
+        joinedChat = true;
+        socket.broadcast.emit('system message', username + ' has joined the chat.');
+        currentUsers.push([username, userID]);
         console.log(currentUsers);
     });
 
-    socket.on('user sent message', (msg) => {
-        socket.broadcast.emit('incoming message', msg);
+    socket.on('user sent message', (username, msg) => {
+        socket.broadcast.emit('incoming message', username + " : ", msg);
     });
 
-    socket.on('disconnect', function () {
-        if (currentUsers.length == 1) {
-            let lastUser = currentUsers[0][0];
-            currentUsers = [];
-            socket.broadcast.emit('incoming message', lastUser + ' has left.');
-            console.log('There are no current users.')
-        } else {
-            Object.keys(io.sockets.sockets).forEach((id) => {
-                for (i = 0; i < currentUsers.length; i++) {
-                    if (currentUsers[i][1] != id) {
-                        let leavingUser = currentUsers[i][0];
-                        currentUsers.splice(i, 1);
-                        socket.broadcast.emit('incoming message', leavingUser + ' has left.');
-                        lastUserToLeave = leavingUser;
-                    }
+    socket.on('disconnect', () => {
+        if (joinedChat) {
+            for (i = 0; i < currentUsers.length; i++) {
+                if (currentUsers[i][1] == socket.id) {
+                    currentUsers.splice(i, 1);
                 }
-            });
+            }
+            socket.broadcast.emit('system message', socket.username + ' has left.'); 
             console.log('Currently online :' + currentUsers);
         }
-    });
+});
 
     /* private message
     socket.on('say to someone', (id, msg) => {

@@ -12,42 +12,61 @@ const messageForm = document.getElementById('messageForm');
 const messages = document.getElementById('chatMessages');
 let message = '';
 
-var socket = io.connect('http://localhost:3000');
-// var socket = io.connect('http://14a48ab8.ngrok.io');
+let socket = io.connect('http://localhost:3000');
+//var socket = io.connect('http://c9c93442.ngrok.io');
 // example URL, make sure to point to the hosted URL, and not localhost:3000 to run online.
 
 function focus() {
     document.getElementById('usernameInput').focus();
 }
 
-function addMessage(msg) {
-    var newMessage = document.createElement('li');
-    var newMessageText = document.createTextNode(msg);
-    newMessage.appendChild(newMessageText);
+function addChatMessage(username, msg) {
+    const newMessage = document.createElement('li');
+
+    const nameSpan = document.createElement('span');
+    const nameText = document.createTextNode(username);
+    nameSpan.appendChild(nameText);
+
+    var messageSpan = document.createElement('span');
+    var messageText = document.createTextNode(msg);
+    messageSpan.appendChild(messageText)
+    
+    newMessage.appendChild(nameSpan);
+    newMessage.appendChild(messageSpan);
+
     messages.appendChild(newMessage);
 }
 
-usernameForm.onsubmit = function (e) {
+function addSystemMessage(msg) {
+    const newMessage = document.createElement('li');
+    const messageSpan = document.createElement('span');
+    const messageText = document.createTextNode(msg);
+    messageSpan.appendChild(messageText);
+    newMessage.appendChild(messageSpan);
+    messages.appendChild(newMessage);
+}
+
+usernameForm.onsubmit = (e) => {
     e.preventDefault();
     username = document.getElementById('usernameInput').value;
     if (username != '') {
         userID = socket.id;
         messagePrefix = username + ' : ';
         socket.emit('join chat', username, userID);
-        addMessage('You have joined the chat.');
+        addSystemMessage('You have joined the chat.');
         usernameForm.style.display = 'hidden';
         messageForm.style.display = 'block';
         document.getElementById('messageInput').focus();
     }
 }
 
-messageForm.onsubmit = function (e) {
+messageForm.onsubmit = (e) => {
     e.preventDefault();
     messageInput = document.getElementById('messageInput');
     message = messageInput.value;
     if (message != '') {
-        socket.emit('user sent message', messagePrefix + message);
-        addMessage(messagePrefix + message);
+        socket.emit('user sent message', username, message);
+        addSystemMessage(messagePrefix + message);
         window.scrollTo(0, document.body.scrollHeight);
         messageInput.value = '';
     }
@@ -61,20 +80,26 @@ socket.on('connect', () => {
 socket.on('current users', (onlineUsers) => {
     users = onlineUsers;
     if (onlineUsers[0]) {
-        addMessage('Online users :')
+        addSystemMessage('Online users :')
         users.forEach(user => {
-            addMessage('    ' + user);
+            addSystemMessage('    ' + user);
         });
     } else {
-        addMessage('There is nobody else here.');
+        addSystemMessage('There is nobody else here.');
     }
 });
 
-socket.on('incoming message', (msg) => {
-    addMessage(msg);
+socket.on('update users', (onlineUsers) => {
+    users = onlineUsers;
+    updateOnlineUsers(onlineUsers)
+})
+
+socket.on('incoming message', (username, msg) => {
+    addChatMessage(username, msg);
     window.scrollTo(0, document.body.scrollHeight);
 });
 
-socket.on('disconnect', () => {
-    socket.emit('user left', username);
+socket.on('system message', (msg) => {
+    addSystemMessage(msg);
+    window.scrollTo(0, document.body.scrollHeight);
 });
