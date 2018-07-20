@@ -41,7 +41,7 @@ socket.on('join chat', (username, userID) => {
 });
 
 socket.on('user sent message', (username, msg) => {
-    socket.broadcast.emit('incoming message', username + " : ", msg);
+    socket.broadcast.emit('incoming message', username, msg);
 });
 
 socket.on('disconnect', () => {

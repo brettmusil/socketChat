@@ -20,19 +20,58 @@ function focus() {
     document.getElementById('usernameInput').focus();
 }
 
+function getTime() {
+    // formats a javascript Date object into a 12h AM/PM time string
+    let date = new Date();
+    let hour = date.getHours();
+    let minute = date.getMinutes();
+    let amPM = (hour > 11) ? "PM" : "AM";
+    if(hour > 12) {
+      hour -= 12;
+    } else if(hour == 0) {
+      hour = "12";
+    }
+    if(minute < 10) {
+      minute = "0" + minute;
+    }
+    return hour + ":" + minute + amPM;
+  }
+
+    function displayOnlineUsernames() {
+        let x = 'nothing';
+    }
+
 function addChatMessage(username, msg) {
-    const newMessage = document.createElement('li');
+    let newMessage = document.createElement('li');
 
-    const nameSpan = document.createElement('span');
-    const nameText = document.createTextNode(username);
+    let nameDiv = document.createElement('div');
+    nameDiv.classList.add('nameAndTimeDiv')
+    let avatarSpan = document.createElement('span');
+    avatarSpan.classList.add('avatar');
+    nameDiv.appendChild(avatarSpan);
+
+    let nameSpan = document.createElement('span');
+    nameSpan.classList.add('chatName');
+    let nameText = document.createTextNode(username);
     nameSpan.appendChild(nameText);
+    nameDiv.appendChild(nameSpan);
 
-    var messageSpan = document.createElement('span');
-    var messageText = document.createTextNode(msg);
-    messageSpan.appendChild(messageText)
-    
-    newMessage.appendChild(nameSpan);
-    newMessage.appendChild(messageSpan);
+    let timeSpan = document.createElement('span');
+    timeSpan.classList.add('time');
+    let timeText = document.createTextNode(getTime());
+    timeSpan.appendChild(timeText);
+    nameDiv.appendChild(timeSpan);
+
+    let messageDiv = document.createElement('div');
+    messageDiv.classList.add('messageDiv');
+    let messageSpan = document.createElement('span');
+    messageSpan.classList.add('chatBubble');
+    let messageText = document.createTextNode(msg);
+    messageSpan.appendChild(messageText);
+    messageDiv.appendChild(messageSpan);
+
+    newMessage.appendChild(nameDiv);
+    newMessage.appendChild(messageDiv);
 
     messages.appendChild(newMessage);
 }
@@ -66,7 +105,7 @@ messageForm.onsubmit = (e) => {
     message = messageInput.value;
     if (message != '') {
         socket.emit('user sent message', username, message);
-        addSystemMessage(messagePrefix + message);
+        addChatMessage(username, message);
         window.scrollTo(0, document.body.scrollHeight);
         messageInput.value = '';
     }

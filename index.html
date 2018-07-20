@@ -7,20 +7,118 @@
   <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      input:focus { outline: none; }
+
+      ul {
+  list-style-type: none;
+}
+
+.container {
+  margin: 0 auto;
+  display: flex;
+}
+
+.people-list {
+  bottom: 0;
+  width: 120px;
+  float: left;
+  height: 100%;
+  border-right: 3px;
+  border-right-color: rgb(237, 239, 241);
+}    
+ .people-list ul {
+  position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: -100;
+    padding: 20px;
+    height: 100%;
+}
+  .people-list li {
+    bottom: 0;
+    }
+  
+  .people-list .about {
+    float: left;
+    margin-top: 8px;
+    padding-left: 8px;
+  }
+
+  .clearfix:after {
+	visibility: hidden;
+	display: block;
+	font-size: 0;
+	content: " ";
+	clear: both;
+	height: 0;
+}
+
+      form { background: #fff; padding: 3px; position: fixed; bottom: 0; width: 100%; border-top: rgb(237, 239, 241); border-top-style: solid; border-top-width: 2px; }
+      form input { border: 0; padding: 10px; height: 22px; margin-left: 10%; width: 70%; }
+      form button { border: none; border-radius: 10px; padding: 10px; }
       #usernameForm { display: block; }
       #messageForm { display: none; }
-      #chatMessages { list-style-type: none; margin: 0; padding: 0; }
-      #chatMessages li { padding: 8px 10px; border-radius: 10px; }
-      #chatMessages li:nth-child(odd) { background: #eee; }
-      #chatMessages { margin-bottom: 40px }
+      #chatMessages { list-style-type: none; margin: 0; padding: 0; padding: 32px 32px 0px 32px;  margin-bottom: 43px; border-left-style: solid; border-left-width: 2px; border-left-color: rgb(237, 239, 241); height: -webkit-fill-available; }
+      #chatMessages li { padding: 0px 0px 0px 0px; }
+      .nameAndTimeDiv { padding-left: 32px; height:16px; margin-top: 18px; }
+      .avatar { width: 24px; height: 24px; }
+      .chatName { background-color: white; font-size: 13px; font-weight: 500; padding-right: 6px; }
+      .time { font-size: 12; color: rgb(135, 138, 140); padding: 0px, 0.438em, 0px, 0.625em; }
+      .messageDiv { padding-left: 32px; }
+      .chatBubble { display: inline-block ; border-radius: 0px 6px 6px 6px; background-color: rgb(237, 239, 241); font-size: 13px; line-height: 24px; padding: 4px 8px; }
     </style>
 
 </head>
 
 <body onload='focus()'>
+  <div class='container clearfix'>
+
+    <div class="people-list" id="people-list">
+        <ul class="list">
+          <li class="clearfix">
+            <div class="about">
+              <div class="name">Vincent Porter</div>
+            </div>
+          </li>
+
+          <li class="clearfix">
+              <div class="about">
+                <div class="name">Vincent Porter</div>
+              </div>
+            </li>
+
+            <li class="clearfix">
+                <div class="about">
+                  <div class="name">Vincent Porter</div>
+                </div>
+              </li>
+
+              <li class="clearfix">
+                  <div class="about">
+                    <div class="name">Vincent Porter</div>
+                  </div>
+                </li>
+
+                <li class="clearfix">
+                    <div class="about">
+                      <div class="name">Vincent Porter</div>
+                    </div>
+                  </li>
+
+                  <li class="clearfix">
+                      <div class="about">
+                        <div class="name">Vincent Porter</div>
+                      </div>
+                    </li>
+
+                    <li class="clearfix">
+                        <div class="about">
+                          <div class="name">Vincent Porter</div>
+                        </div>
+                      </li>
+
+        </ul>
+      </div>
 
     <ul id='chatMessages'></ul>
 
@@ -30,10 +128,10 @@
     </form>
 
     <form id='messageForm' action=''>
-          <input type='text' id='messageInput' autocomplete='off' />
+          <input type='text' id='messageInput' autocomplete='off' placeholder="Enter a message." />
           <button> Send </button>
     </form>
-
+  </div>
   <script src='/socket.io/socket.io.js'></script>
 
   <!--
