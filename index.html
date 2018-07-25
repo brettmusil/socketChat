@@ -2,135 +2,198 @@
 <html>
 
 <head>
-  <title>Socket.IO chat</title>
+  <title>SocketChat</title>
 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
   <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      input:focus { outline: none; }
-
-      ul {
-  list-style-type: none;
-}
-
-.container {
-  margin: 0 auto;
-  display: flex;
-}
-
-.people-list {
-  bottom: 0;
-  width: 120px;
-  float: left;
-  height: 100%;
-  border-right: 3px;
-  border-right-color: rgb(237, 239, 241);
-}    
- .people-list ul {
-  position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: -100;
-    padding: 20px;
-    height: 100%;
-}
-  .people-list li {
-    bottom: 0;
+    .h1,
+    .h2,
+    .h3,
+    .h4,
+    .h5,
+    .h6,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: 0;
     }
-  
-  .people-list .about {
-    float: left;
-    margin-top: 8px;
-    padding-left: 8px;
-  }
 
-  .clearfix:after {
-	visibility: hidden;
-	display: block;
-	font-size: 0;
-	content: " ";
-	clear: both;
-	height: 0;
-}
+    .h6 {
+      font-size: .9rem;
+    }
 
-      form { background: #fff; padding: 3px; position: fixed; bottom: 0; width: 100%; border-top: rgb(237, 239, 241); border-top-style: solid; border-top-width: 2px; }
-      form input { border: 0; padding: 10px; height: 22px; margin-left: 10%; width: 70%; }
-      form button { border: none; border-radius: 10px; padding: 10px; }
-      #usernameForm { display: block; }
-      #messageForm { display: none; }
-      #chatMessages { list-style-type: none; margin: 0; padding: 0; padding: 32px 32px 0px 32px;  margin-bottom: 43px; border-left-style: solid; border-left-width: 2px; border-left-color: rgb(237, 239, 241); height: -webkit-fill-available; }
-      #chatMessages li { padding: 0px 0px 0px 0px; }
-      .nameAndTimeDiv { padding-left: 32px; height:16px; margin-top: 18px; }
-      .avatar { width: 24px; height: 24px; }
-      .chatName { background-color: white; font-size: 13px; font-weight: 500; padding-right: 6px; }
-      .time { font-size: 12; color: rgb(135, 138, 140); padding: 0px, 0.438em, 0px, 0.625em; }
-      .messageDiv { padding-left: 32px; }
-      .chatBubble { display: inline-block ; border-radius: 0px 6px 6px 6px; background-color: rgb(237, 239, 241); font-size: 13px; line-height: 24px; padding: 4px 8px; }
-    </style>
+    .user {
+      padding-left: 5px;
+    }
+
+    #usernameForm {
+      display: block;
+    }
+
+    #usernameInput {
+      padding-left: 34px;
+    }
+
+    #privateMessageForm {
+      display: none;
+    }
+
+    #privateMessageInput {
+      padding-left: 34px;
+    }
+
+    #messageForm {
+      display: none;
+    }
+
+    #messageInput {
+      padding-left: 34px;
+    }
+
+    #typingUsers {
+      display: none;
+      margin-left: 35px;
+      margin-bottom: 40px;
+      font-size: .85rem;
+    }
+
+    input[type='text'],
+    textarea {
+      outline: none;
+      box-shadow: none !important;
+      border: 1px solid #ccc !important;
+    }
+
+    #inputRow {
+      background-color: white;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-control {
+      border-radius: 0;
+    }
+
+    .list-group-item {
+      border-style: none;
+    }
+
+    .nameAndTimeDiv {
+      margin-bottom: 6px;
+    }
+
+    .time {
+      font-size: .85rem;
+    }
+
+    .first {
+      padding-bottom: 2px;
+    }
+
+    .second {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    .last {
+      padding-top: 2px;
+      padding-bottom: 10px;
+    }
+
+    .system {
+      padding: 12px 20px 8px 20px;
+    }
+
+    .systemNew {
+      padding: 20px 20px 8px 20px;
+    }
+
+    #chatMessages {
+      margin-bottom: 60px;
+    }
+
+    .chatBubble {
+      display: inline-block;
+      border-radius: 2px 16px 16px 16px;
+      background-color: rgb(240, 240, 240);
+      margin-bottom: 2px;
+      margin-left: 14px;
+      line-height: 24px;
+      padding: 4px 16px 6px 16px;
+    }
+
+    .chatBubbleSecond {
+      display: inline-block;
+      border-radius: 16px 16px 16px 16px;
+      background-color: rgb(240, 240, 240);
+      margin-bottom: 2px;
+      margin-left: 14px;
+      line-height: 24px;
+      padding: 4px 16px 6px 16px;
+    }
+  </style>
 
 </head>
 
 <body onload='focus()'>
-  <div class='container clearfix'>
-
-    <div class="people-list" id="people-list">
-        <ul class="list">
-          <li class="clearfix">
-            <div class="about">
-              <div class="name">Vincent Porter</div>
-            </div>
-          </li>
-
-          <li class="clearfix">
-              <div class="about">
-                <div class="name">Vincent Porter</div>
-              </div>
-            </li>
-
-            <li class="clearfix">
-                <div class="about">
-                  <div class="name">Vincent Porter</div>
-                </div>
-              </li>
-
-              <li class="clearfix">
-                  <div class="about">
-                    <div class="name">Vincent Porter</div>
-                  </div>
-                </li>
-
-                <li class="clearfix">
-                    <div class="about">
-                      <div class="name">Vincent Porter</div>
-                    </div>
-                  </li>
-
-                  <li class="clearfix">
-                      <div class="about">
-                        <div class="name">Vincent Porter</div>
-                      </div>
-                    </li>
-
-                    <li class="clearfix">
-                        <div class="about">
-                          <div class="name">Vincent Porter</div>
-                        </div>
-                      </li>
-
-        </ul>
+  <div class='container-fluid'>
+    <div class='container-fluid'>
+      <div class='row sticky-top'>
+        <div class='col-sm-2 text-left'>
+          <ul class="list-group sticky-top text-left" id='usernames'>
+          </ul>
+        </div>
+        <div class='col-sm-10'>
+          <ul class='list-group' id='chatMessages'>
+          </ul>
+        </div>
       </div>
+    </div>
+    <div class='container-fluid'>
+      <div class='row fixed-bottom'>
+        <div class='col text-muted' id='typingUsers'>
+          USER1, USER2, are typing.
+        </div>
+      </div>
+      <div class='row align-items-end' id='inputRow'>
 
-    <ul id='chatMessages'></ul>
+        <form id='usernameForm'>
+          <div class='form-group row fixed-bottom'>
 
-    <form id='usernameForm' action=''>
-          <input type='text' id='usernameInput' autocomplete='off' placeholder='Enter your chat name.' />
-          <button> Submit </button>
-    </form>
+            <div class='col'>
+              <input id='usernameInput' type='text' class='form-control' placeholder='Enter your username.'>
+            </div>
 
-    <form id='messageForm' action=''>
-          <input type='text' id='messageInput' autocomplete='off' placeholder="Enter a message." />
-          <button> Send </button>
-    </form>
+          </div>
+        </form>
+
+        <form id='messageForm'>
+          <div class='form-group row fixed-bottom'>
+
+            <div class='col'>
+              <input id='messageInput' type='text' class='form-control' placeholder='Send a message.'>
+
+            </div>
+          </div>
+        </form>
+
+        <form id='privateMessageForm'>
+          <div class='form-group row fixed-bottom'>
+
+            <div class='col'>
+              <input id='privateMessageInput' type='text' class='form-control' placeholder='Send a message to..'>
+
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   <script src='/socket.io/socket.io.js'></script>
 
@@ -138,6 +201,13 @@
   <script src'https://cdn.socket.io/socket.io-1.7.3.js'></script>
   -->
   <script src='/chat.js'></script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
 
 </body>
 

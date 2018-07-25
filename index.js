@@ -10,59 +10,79 @@ let staticFiles = __dirname + '/scripts';
 
 let onlineUsers = [];
 
+let typingUsers = [];
+
 app.use('/', express.static(staticFiles));
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-function getOnlineUsernames() {
-    let onlineUsernames = [];
-    onlineUsers.forEach((user) => {
-        onlineUsernames.push(user[0]);
-    });
-    return onlineUsernames;
-}
-
 io.on('connection', (socket) => {
-let joinedChat = false;
+    let joinedChat = false;
 
-socket.on('hello?', (userID) => {
-    io.to(userID).emit('who is here', getOnlineUsernames());
-});
+    socket.on('hello?', (userID) => {
+        io.to(userID).emit('update users', onlineUsers);
+    });
 
-socket.on('join chat', (username, userID) => {
-    socket.username = username;
-    joinedChat = true;
-    onlineUsers.push([username, userID]);
-    socket.broadcast.emit('system message', username + ' has joined the chat.');
-    socket.emit('update users', onlineUsers)
-    console.log(onlineUsers);
-});
+    socket.on('join chat', (username, userID) => {
+        socket.username = username;
+        joinedChat = true;
+        onlineUsers.push([username, userID]);
+        socket.broadcast.emit('system message', username + ' has joined the chat.');
+        socket.broadcast.emit('update users', onlineUsers);
+        console.log(onlineUsers);
+    });
 
-socket.on('user sent message', (username, msg) => {
-    socket.broadcast.emit('incoming message', username, msg);
-});
+    socket.on('typing', (username) => {
+        console.log(username + ' is typing.');
+        typingUsers.push(username)
+        socket.broadcast.emit('users typing', typingUsers);
+    });
 
-socket.on('disconnect', () => {
+    socket.on('done typing', (user) => {
+        console.log(user + ' is done typing');
+        if (typingUsers.includes(user)) {
+            let filteredUsers = typingUsers.filter((value) => {
+                return value !== user;
+            });
+            typingUsers = filteredUsers;
+            socket.broadcast.emit('users typing', typingUsers);
+        }
+    });
+
+    socket.on('user sent message', (username, msg) => {
+        socket.broadcast.emit('incoming message', username, msg);
+    });
+
+    socket.on('disconnect', () => {
         if (joinedChat) {
+            updatedOnlineusers = [];
             for (i = 0; i < onlineUsers.length; i++) {
-                if (onlineUsers[i][1] == socket.id) {
-                    onlineUsers.splice(i, 1);
+                if (onlineUsers[i][1] !== socket.id) {
+                    updatedOnlineusers.push([onlineUsers[i][0], onlineUsers[i][1]]);
                 }
             }
-            socket.broadcast.emit('update users', onlineUsers);
-            socket.broadcast.emit('system message', socket.username + ' has left.'); 
-            console.log('Currently online :' + onlineUsers);
-        }
-});
+            onlineUsers = updatedOnlineusers;
 
-/* private message
-socket.on('say to someone', (id, msg) => {
-  // send a private message to the socket with the given id
-  socket.to(id).emit('my message', msg);
-});
-*/
+            if (typingUsers.includes(socket.username)) {
+                let filteredUsers = typingUsers.filter((value) => {
+                    return value !== socket.username;
+                });
+                typingUsers = filteredUsers;
+                socket.broadcast.emit('users typing', typingUsers);
+            }
+
+            socket.broadcast.emit('system message', socket.username + ' has left.');
+            socket.broadcast.emit('update users', onlineUsers);
+            console.log(onlineUsers);
+        }
+    });
+
+    socket.on('private message', (sentFrom, msg, recipientID) => {
+        let privateMessage = 'Private message from ' + sentFrom + ' : ' + msg;
+        socket.to(recipientID).emit('system message', privateMessage);
+    });
 
 });
 
