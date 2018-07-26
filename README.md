@@ -6,10 +6,11 @@ of the Socket.IO website.
 
 Features include:
     usernames,
+    userlist,
     private messaging,
     user is typing,
-    user has joined / left,
-    & chat time stamps.
+    user has joined or left the chat,
+    chat time stamps.
 
 Use 'node index' to run on localhost:3000
 
