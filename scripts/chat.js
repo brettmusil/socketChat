@@ -1,20 +1,18 @@
-let usernameInput = document.getElementById('');
-
 let username = '';
 let userID = '';
 let loggedIn = false;
 let users = [];
+let message = '';
 let lastToMessage = '';
 let lastSentMultiple = false;
-let lastTimeMessaged = '';
 let privateMessageUsername = '';
 let privateMessageUserID = '';
 let messagingChat = false;
 let messagingUser = false;
 let typing = false;
-// let typingUsernames = [];
 
 const usernameForm = document.getElementById('usernameForm');
+const usernameInput = document.getElementById('usernameInput');
 const messageForm = document.getElementById('messageForm');
 const messageInput = document.getElementById('messageInput');
 const privateMessageForm = document.getElementById('privateMessageForm');
@@ -22,13 +20,12 @@ const privateMessageInput = document.getElementById('privateMessageInput');
 const messages = document.getElementById('chatMessages');
 const usernames = document.getElementById('usernames');
 const typingUsers = document.getElementById('typingUsers');
-let message = '';
 
-let socket = io.connect('http://localhost:3000');
-//var socket = io.connect('http://c9c93442.ngrok.io');
+let socket = io.connect('http://localhost:3000'); 
+// let socket = io.connect('http://62b1962d.ngrok.io');
 // example URL, make sure to point to the hosted URL, and not localhost:3000 to run online.
 
-function focus() {
+function usernameFocus() {
     document.getElementById('usernameInput').focus();
 }
 
@@ -55,7 +52,8 @@ document.onkeyup = function (e) {
     if (!!messageInput.value && !typing) {
         typing = true;
         socket.emit('typing', username);
-    } else if (!messageInput.value && typing) {
+    } 
+    if (!messageInput.value && typing) {
         typing = false;
         socket.emit('done typing', username);
     }
@@ -66,7 +64,6 @@ document.onkeydown = function (e) {
     let isEscape = false;
 
     if (loggedIn && messagingUser) {
-
         if ("key" in e) {
             isEscape = (e.key == "Escape" || e.key == "Esc");
         } else {
@@ -101,12 +98,10 @@ function getTime() {
     }
     return hour + ':' + minute + ' ' + amPM;
 }
-
+// add msg button next
 function addUsername(username, usernameID) {
     let onlineUser = document.createElement('li');
-    onlineUser.classList.add('list-group-item');
-    onlineUser.classList.add('h6');
-    onlineUser.classList.add('user');
+    onlineUser.classList.add('list-group-item', 'h6', 'user');
     onlineUser.id = usernameID;
     let onlineUsernameText = document.createTextNode(username);
     onlineUser.appendChild(onlineUsernameText);
@@ -136,8 +131,8 @@ function usersTyping(usersTyping) {
         typingUsers.textContent = '';
         typingUsers.style.display = 'none';
     } else {
-        for (i = 0; i < usersTyping; i++) {
-            if (i == usersTyping.length) {
+        for (i = 0; i < usersTyping.length; i++) {
+            if (i == usersTyping.length -1) {
                 multipleTypers += 'and ' + usersTyping[i] + ' are typing.';
             } else {
                 multipleTypers += usersTyping[i] + ', ';
@@ -149,17 +144,18 @@ function usersTyping(usersTyping) {
 }
 
 function addChatMessage(username, msg) {
-    if (lastToMessage != username) {
-
-        if (lastSentMultiple) {
+    if (lastToMessage !== username) {
+        if (lastSentMultiple == true && lastToMessage !== 'system') {
             messages.lastChild.classList.remove('second');
             messages.lastChild.classList.add('last');
-            lastSentMultiple = false;
+        }
+        if (lastSentMultiple == false && lastToMessage !== 'system') {
+            messages.lastChild.classList.remove('first');
+            messages.lastChild.classList.add('soloMessage');
         }
 
         let newMessage = document.createElement('li');
-        newMessage.classList.add('list-group-item');
-        newMessage.classList.add('first');
+        newMessage.classList.add('list-group-item', 'first');
 
         let nameDiv = document.createElement('div');
         nameDiv.classList.add('nameAndTimeDiv')
@@ -168,17 +164,14 @@ function addChatMessage(username, msg) {
         nameDiv.appendChild(avatarSpan);
 
         let nameSpan = document.createElement('span');
-        nameSpan.classList.add('chatName');
-        nameSpan.classList.add('h5');
+        nameSpan.classList.add('chatName', 'h5');
         let nameText = document.createTextNode(username);
         nameSpan.appendChild(nameText);
         nameDiv.appendChild(nameSpan);
 
         let timeSpan = document.createElement('span');
-        timeSpan.classList.add('time');
-        timeSpan.classList.add('text-muted');
+        timeSpan.classList.add('time', 'text-muted');
         let timeText = document.createTextNode(' ' + getTime());
-        lastTimeMessaged = getTime();
         timeSpan.appendChild(timeText);
         nameDiv.appendChild(timeSpan);
 
@@ -199,23 +192,25 @@ function addChatMessage(username, msg) {
             top: document.body.scrollHeight,
             behavior: 'smooth'
         });
-    } else if (lastToMessage == username) {
-        lastSentMultiple = true;
+        lastSentMultiple = false;
+    }    
+
+    if (lastToMessage == username) {
         let newMessage = document.createElement('li');
-        newMessage.classList.add('list-group-item');
-        newMessage.classList.add('second');
+        newMessage.classList.add('list-group-item', 'second');
 
         let messageDiv = document.createElement('div');
         messageDiv.classList.add('messageDiv');
         let messageSpan = document.createElement('span');
-        messageSpan.classList.add('chatBubbleSecond');
-        messageSpan.classList.add('h6');
+        messageSpan.classList.add('chatBubbleSecond', 'h6');
         let messageText = document.createTextNode(msg);
         messageSpan.appendChild(messageText);
         messageDiv.appendChild(messageSpan);
 
         newMessage.appendChild(messageDiv);
         messages.appendChild(newMessage);
+
+        lastSentMultiple = true;
 
         window.scrollTo({
             top: document.body.scrollHeight,
@@ -226,46 +221,47 @@ function addChatMessage(username, msg) {
 }
 
 function addSystemMessage(msg) {
-    /*
-    if (!!lastToMessage || !lastToMessage && lastToMessage !== 'system') {
+        if (lastToMessage !== 'system' && lastSentMultiple == true) {
+            messages.lastChild.classList.remove('second');
+            messages.lastChild.classList.add('last');
+            lastSentMultiple = false;
+        }
+        if (lastToMessage !== 'system' && lastSentMultiple == false) {
+            if (lastToMessage !== '') {
+            messages.lastChild.classList.remove('first');
+            messages.lastChild.classList.add('soloMessage');
+            }
+        }
         const newMessage = document.createElement('li');
-        newMessage.classList.add('list-group-item');
-        newMessage.classList.add('h6');
-        newMessage.classList.add('text-muted');
-        newMessage.classList.add('systemNew')
-        const messageSpan = document.createElement('span');
+        newMessage.classList.add('list-group-item', 'h6', 'text-muted');
         const messageText = document.createTextNode(msg);
-        messageSpan.appendChild(messageText);
-        newMessage.appendChild(messageSpan);
+        newMessage.appendChild(messageText);
         messages.appendChild(newMessage);
         window.scrollTo({
             top: document.body.scrollHeight,
             behavior: 'smooth'
         });
-    } else {
-    */
-        const newMessage = document.createElement('li');
-        newMessage.classList.add('list-group-item');
-        newMessage.classList.add('h6');
-        newMessage.classList.add('text-muted');
-        newMessage.classList.add('system')
-        const messageSpan = document.createElement('span');
-        const messageText = document.createTextNode(msg);
-        messageSpan.appendChild(messageText);
-        newMessage.appendChild(messageSpan);
-        messages.appendChild(newMessage);
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-        });
-    
     lastToMessage = 'system';
 }
 
 usernameForm.onsubmit = (e) => {
     e.preventDefault();
+    let unavailibleNames = ["system"];
+
     username = document.getElementById('usernameInput').value;
-    if (username != '') {
+
+    if (users) {
+        for (i = 0; i < users.length; i++) {
+            unavailibleNames.push(users[i][0]);
+        }
+        if (unavailibleNames.includes(username)) {
+            addSystemMessage('The username ' + username + ' is already being used.');
+            addSystemMessage('Pick another one.');
+            usernameInput.value = '';
+        }
+    }
+
+    if (username != '' && unavailibleNames.includes(username) == false) {
         loggedIn = true;
         messagingChat = true;
         userID = socket.id;

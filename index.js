@@ -23,6 +23,9 @@ io.on('connection', (socket) => {
 
     socket.on('hello?', (userID) => {
         io.to(userID).emit('update users', onlineUsers);
+        if (typingUsers) {
+            io.to(userID).emit('users typing', typingUsers);
+        }
     });
 
     socket.on('join chat', (username, userID) => {
@@ -35,13 +38,11 @@ io.on('connection', (socket) => {
     });
 
     socket.on('typing', (username) => {
-        console.log(username + ' is typing.');
         typingUsers.push(username)
         socket.broadcast.emit('users typing', typingUsers);
     });
 
     socket.on('done typing', (user) => {
-        console.log(user + ' is done typing');
         if (typingUsers.includes(user)) {
             let filteredUsers = typingUsers.filter((value) => {
                 return value !== user;
